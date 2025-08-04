@@ -1,0 +1,15 @@
+# === Generated Data Files ===
+data/*.bin
+data/*.txt
+!data/.gitkeep      # optional: keep empty folder tracked
+
+# === Output Files ===
+bin/
+*.out
+*.exe
+*.o
+
+# === OS & Editor Junk ===
+.DS_Store
+Thumbs.db
+*.swp
