@@ -63,6 +63,9 @@ generate-256: $(GEN_OUT)
 clean:
 	rm -rf $(BIN_DIR)
 	@echo "🧹 Cleaned all binaries"
+    
+clean-partitions:
+	rm -f partition_*.bin sorted_*.bin
 
 # === Build Each Separately ===
 quick_sort: $(QS_OUT)
