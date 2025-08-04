@@ -40,3 +40,12 @@ To clean up the temporary partition files, run:
 ```
 make clean-partitions
 ```
+
+## Benchmark and Record Runtimes
+
+You can wrap each run in /usr/bin/time -v or use Bash timing:
+
+```
+time make run-qs
+time make run-ms
+```
