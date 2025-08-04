@@ -7,13 +7,13 @@ BIN_DIR = bin
 $(shell mkdir -p $(BIN_DIR))
 
 # === Source Files ===
-QS_SRC = quick_sort_version/quick_sort_main.cpp \
-         quick_sort_version/external_quick_sort.cpp \
-         quick_sort_version/interval_heap.cpp
+QS_SRC = quick_sort/quick_sort_main.cpp \
+         quick_sort/external_quick_sort.cpp \
+         quick_sort/interval_heap.cpp
 
-MS_SRC = merge_sort_version/merge_sort_main.cpp \
-         merge_sort_version/tournament_tree.cpp \
-         merge_sort_version/huffman_merge.cpp
+MS_SRC = merge_sort/merge_sort_main.cpp \
+         merge_sort/tournament_tree.cpp \
+         merge_sort/huffman_merge.cpp
 
 GEN_SRC = scripts/generate_input.cpp
 CMP_SRC = scripts/compare_output.cpp
@@ -53,7 +53,13 @@ run-ms: $(MS_OUT)
 
 run-all: run-qs run-ms
 
-# === Cleanup ===
+generate-256: $(GEN_OUT)
+	@$(GEN_OUT) data/input_1.txt 256
+	@$(GEN_OUT) data/input_2.txt 256
+	@$(GEN_OUT) data/input_3.txt 256
+	@echo "Generated 3 × 256MB input files"
+
+# === Cleanup ====
 clean:
 	rm -rf $(BIN_DIR)
 	@echo "🧹 Cleaned all binaries"

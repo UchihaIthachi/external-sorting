@@ -3,16 +3,15 @@
 
 int main(int argc, char* argv[]) {
     if (argc != 4) {
-        std::cerr << "Usage: ./quick_sort <input_file> <output_file> <mem_limit_bytes>\n";
+        std::cerr << "Usage: ./quick_sort_exec <input_file> <output_file> <memory_limit_bytes>\n";
         return 1;
     }
 
     std::string inputFile = argv[1];
     std::string outputFile = argv[2];
-    size_t memLimit = std::stoul(argv[3]);
+    size_t memLimit = std::stoull(argv[3]);
 
-    externalQuickSort(inputFile, outputFile, memLimit);
+    externalQuickSort(inputFile, outputFile, memLimit, 0);
 
-    std::cout << "Sorting completed!\n";
     return 0;
 }

@@ -5,6 +5,7 @@ data/*.txt
 
 # === Output Files ===
 bin/
+*.bin
 *.out
 *.exe
 *.o

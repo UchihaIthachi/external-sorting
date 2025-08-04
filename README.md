@@ -1,9 +1,42 @@
-| Task                   | Command           |
-| ---------------------- | ----------------- |
-| Build everything       | `make`            |
-| Build only quick sort  | `make quick_sort` |
-| Build only merge sort  | `make merge_sort` |
-| Build only the scripts | `make scripts`    |
-| Run quick sort example | `make run-qs`     |
-| Run merge sort example | `make run-ms`     |
-| Clean up all binaries  | `make clean`      |
+# External Sorting
+
+This project implements external sorting using quick sort and merge sort.
+
+## Building the Code
+
+To build the code, run the following command:
+
+```
+make
+```
+
+This will create the executables in the `bin` directory.
+
+## Running the Code
+
+To run the quick sort algorithm on a 256MB file, run the following commands:
+
+```
+make generate-256
+make run-qs-256
+```
+
+To run the merge sort algorithm, you can use the `run-ms` target:
+
+```
+make run-ms
+```
+
+## Cleaning up
+
+To clean up the build files, run:
+
+```
+make clean
+```
+
+To clean up the temporary partition files, run:
+
+```
+make clean-partitions
+```
