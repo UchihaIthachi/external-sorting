@@ -1,5 +1,8 @@
 #include "external_merge_sort.hpp"
-#include <memory>
+#include "tournament_tree.hpp" 
+#include <vector> 
+#include <string> 
+#include <cstdio> 
 
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
     const size_t BUF_SIZE = 1 << 20;  // 1 MB
@@ -9,7 +12,10 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     std::vector<std::string> runs;
     std::vector<int> treeKeys, pendingNextRun;
     std::vector<bool> keyFrozen;
-    size_t maxKeys = (memLimit - 2 * BUF_SIZE) / sizeof(int);
+    
+    size_t memForDataStructures = memLimit - (2 * BUF_SIZE);
+    size_t memoryPerKey = sizeof(int) + sizeof(bool) + sizeof(int) + (2 * sizeof(TreeNode));
+    size_t maxKeys = memForDataStructures / memoryPerKey;
 
     TournamentTree tree(maxKeys);
     while (treeKeys.size() < maxKeys && reader.hasNext()) {
@@ -22,16 +28,15 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
 
     int INF_KEY = INT_MAX;
     int lastOutput = INT_MIN;
-    FileWriter runWriter;
-    runWriter.openNew("run0.bin", outputBuf);
     int runCount = 0;
+    std::unique_ptr<FileWriter> runWriter = std::make_unique<FileWriter>("run0.bin", outputBuf);
 
     while (!tree.empty()) {
         int minKey = tree.getMinKey();
         int src = tree.getMinSource();
         tree.removeKey();
-        runWriter.write(minKey);
-        if (runWriter.bufferFull()) runWriter.flush();
+        runWriter->write(minKey);
+        if (runWriter->bufferFull()) runWriter->flush();
         lastOutput = minKey;
 
         if (reader.hasNext()) {
@@ -46,13 +51,14 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
         }
 
         if (tree.getMinKey() == INF_KEY) {
-            runWriter.flush(); runWriter.close();
-            runs.push_back(runWriter.fileName());
+            runWriter->flush();
+            runWriter->close();
+            runs.push_back(runWriter->fileName());
 
             if (!pendingNextRun.empty()) {
                 runCount++;
                 std::string nextRun = "run" + std::to_string(runCount) + ".bin";
-                runWriter.openNew(nextRun, outputBuf);
+                runWriter = std::make_unique<FileWriter>(nextRun, outputBuf);
 
                 treeKeys.assign(pendingNextRun.begin(), pendingNextRun.end());
                 pendingNextRun.clear();
@@ -68,9 +74,10 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
         }
     }
 
-    if (runWriter.isOpen()) {
-        runWriter.flush(); runWriter.close();
-        runs.push_back(runWriter.fileName());
+    if (runWriter && runWriter->isOpen()) {
+        runWriter->flush();
+        runWriter->close();
+        runs.push_back(runWriter->fileName());
     }
     reader.close();
 
@@ -120,6 +127,13 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             mergedOut.flush(); mergedOut.close();
             for (auto& rr : runReaders) rr->close();
             nextRuns.push_back(mergedFile);
+
+            // Clean up the runs that were just merged
+            for (int j = 0; j < groupSize; ++j) {
+                if (remove(currentRuns[i + j].c_str()) != 0) {
+                    std::cerr << "Error deleting file: " << currentRuns[i + j] << std::endl;
+                }
+            }
         }
 
         currentRuns.swap(nextRuns);

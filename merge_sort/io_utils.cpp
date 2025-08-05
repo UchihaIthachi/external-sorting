@@ -72,26 +72,15 @@ void FileReader::close() {
 }
 
 // FileWriter implementation
-FileWriter::FileWriter() : buffer(*(new Buffer(0))) {}
-
-FileWriter::FileWriter(const std::string& filename, Buffer& buffer) : buffer(buffer) {
-    openNew(filename, buffer);
-}
-
-FileWriter::~FileWriter() {
-    close();
-}
-
-void FileWriter::openNew(const std::string& filename, Buffer& buffer) {
-    if (file.is_open()) {
-        close();
-    }
-    this->buffer = buffer;
-    this->current_filename = filename;
+FileWriter::FileWriter(const std::string& filename, Buffer& buffer) : buffer(buffer), current_filename(filename) {
     file.open(filename, std::ios::binary | std::ios::trunc);
     if (!file.is_open()) {
         std::cerr << "Error opening file for writing: " << filename << std::endl;
     }
+}
+
+FileWriter::~FileWriter() {
+    close();
 }
 
 void FileWriter::write(int value) {

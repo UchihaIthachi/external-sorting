@@ -35,17 +35,14 @@ private:
 
 class FileWriter {
 public:
-    FileWriter();
     FileWriter(const std::string& filename, Buffer& buffer);
     ~FileWriter();
-    void openNew(const std::string& filename, Buffer& buffer);
     void write(int value);
     void flush();
     void close();
     bool isOpen() const;
     std::string fileName() const;
     bool bufferFull() const;
-
 
 private:
     std::ofstream file;
