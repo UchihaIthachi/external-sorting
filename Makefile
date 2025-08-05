@@ -46,23 +46,24 @@ $(CMP_OUT): $(CMP_SRC)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 	@echo "Built: $@"
 
-# === Run Targets ===
-run-qs-256: $(QS_OUT)
+# === Run Targets (only one file) ===
+run-qs: $(QS_OUT)
 	@$(QS_OUT) data/input_1.txt data/sorted_qs_1.txt 16777216
 
-run-ms-256: $(MS_OUT)
+run-ms: $(MS_OUT)
 	@$(MS_OUT) data/input_1.txt data/sorted_ms_1.txt 16777216
 
-run-all: run-qs-256-1 run-ms-256-1
+run-all: run-qs run-ms
 
+# === Input Generation (only one file) ===
 generate-256: $(GEN_OUT)
 	@$(GEN_OUT) data/input_1.txt 256
-	@echo "Generated 3 × 256MB input files"
+	@echo "Generated 1 × 256MB input file"
 
-# === Cleanup ====
+# === Cleanup ===
 clean:
 	rm -rf $(BIN_DIR)
-	@echo "Cleaned all binaries"
+	@echo "🧹 Cleaned all binaries"
 
 clean-partitions:
 	rm -f partition_*.bin sorted_*.bin
@@ -72,4 +73,6 @@ quick_sort: $(QS_OUT)
 merge_sort: $(MS_OUT)
 scripts: $(GEN_OUT) $(CMP_OUT)
 
-.PHONY: all clean quick_sort merge_sort scripts run-qs run-ms run-all
+# === Declare Phony Targets ===
+.PHONY: all clean clean-partitions quick_sort merge_sort scripts \
+        run-qs run-ms run-all generate-256
