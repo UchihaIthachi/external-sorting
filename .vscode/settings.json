@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "MakeFile": "pip-requirements",
+    "*.css": "tailwindcss",
+    "vector": "cpp"
+  }
+}
