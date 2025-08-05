@@ -1,4 +1,5 @@
 #include "external_merge_sort.hpp"
+#include <memory>
 
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
     const size_t BUF_SIZE = 1 << 20;  // 1 MB
@@ -82,15 +83,17 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
         nextRuns.clear();
         for (size_t i = 0; i < currentRuns.size(); i += K) {
             int groupSize = std::min(K, (int)(currentRuns.size() - i));
-            std::vector<FileReader> runReaders;
+            std::vector<std::unique_ptr<Buffer>> buffers;
+            std::vector<std::unique_ptr<FileReader>> runReaders;
             for (int j = 0; j < groupSize; ++j) {
-                runReaders.emplace_back(currentRuns[i+j], Buffer(BUF_SIZE));
+                buffers.push_back(std::make_unique<Buffer>(BUF_SIZE));
+                runReaders.push_back(std::make_unique<FileReader>(currentRuns[i+j], *buffers.back()));
             }
 
             TournamentTree mergeTree(groupSize);
             std::vector<int> initKeys(groupSize), runIdx(groupSize);
             for (int j = 0; j < groupSize; ++j) {
-                initKeys[j] = runReaders[j].hasNext() ? runReaders[j].next() : INF_KEY;
+                initKeys[j] = runReaders[j]->hasNext() ? runReaders[j]->next() : INF_KEY;
                 runIdx[j] = j;
             }
             mergeTree.initialize(initKeys, runIdx);
@@ -105,8 +108,8 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
                 mergedOut.write(smallest);
                 if (mergedOut.bufferFull()) mergedOut.flush();
 
-                if (runReaders[srcRun].hasNext()) {
-                    mergeTree.replaceKey(runReaders[srcRun].next(), srcRun);
+                if (runReaders[srcRun]->hasNext()) {
+                    mergeTree.replaceKey(runReaders[srcRun]->next(), srcRun);
                 } else {
                     mergeTree.replaceKey(INF_KEY, srcRun);
                 }
@@ -115,7 +118,7 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             }
 
             mergedOut.flush(); mergedOut.close();
-            for (auto& rr : runReaders) rr.close();
+            for (auto& rr : runReaders) rr->close();
             nextRuns.push_back(mergedFile);
         }
 
