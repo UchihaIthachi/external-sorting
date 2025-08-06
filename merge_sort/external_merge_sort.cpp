@@ -1,11 +1,18 @@
 #include "external_merge_sort.hpp"
-#include "tournament_tree.hpp" 
-#include <vector> 
+#include "io_utils.hpp"
+#include "tournament_tree.hpp"
+#include <iostream>
+#include <vector>
 #include <string> 
 #include <cstdio> 
 #include <memory>
 
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
+    std::cout << "=== External Merge Sort ===" << std::endl;
+    std::cout << "Input file: " << inputFile << std::endl;
+    std::cout << "Output file: " << outputFile << std::endl;
+    std::cout << "Memory limit: " << memLimit << " bytes" << std::endl;
+
     const size_t BUF_SIZE = 1 << 20;  // 1 MB
     Buffer inputBuf(BUF_SIZE), outputBuf(BUF_SIZE);
     FileReader reader(inputFile, inputBuf);
@@ -13,16 +20,18 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     std::vector<std::string> runs;
     std::vector<int> treeKeys, pendingNextRun;
     std::vector<bool> keyFrozen;
-    
+
     size_t memForDataStructures = memLimit - (2 * BUF_SIZE);
     size_t memoryPerKey = sizeof(int) + sizeof(bool) + sizeof(int) + (2 * sizeof(TreeNode));
     size_t maxKeys = memForDataStructures / memoryPerKey;
 
     TournamentTree tree(maxKeys);
+    std::cout << "Max keys in memory: " << maxKeys << std::endl;
     while (treeKeys.size() < maxKeys && reader.hasNext()) {
         treeKeys.push_back(reader.next());
         keyFrozen.push_back(false);
     }
+    std::cout << "Initial keys loaded: " << treeKeys.size() << std::endl;
 
     std::vector<int> runIndex(treeKeys.size(), 0);
     tree.initialize(treeKeys, runIndex);
@@ -32,6 +41,7 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     int runCount = 0;
     std::unique_ptr<FileWriter> runWriter = std::make_unique<FileWriter>("run0.bin", outputBuf);
 
+    std::cout << "--- Run Creation Phase ---" << std::endl;
     while (!tree.empty()) {
         int minKey = tree.getMinKey();
         int src = tree.getMinSource();
@@ -55,10 +65,12 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             runWriter->flush();
             runWriter->close();
             runs.push_back(runWriter->fileName());
+            std::cout << "Finished run " << runCount << ": " << runs.back() << std::endl;
 
             if (!pendingNextRun.empty()) {
                 runCount++;
                 std::string nextRun = "run" + std::to_string(runCount) + ".bin";
+                std::cout << "Starting new run " << runCount << ": " << nextRun << std::endl;
                 runWriter = std::make_unique<FileWriter>(nextRun, outputBuf);
 
                 treeKeys.assign(pendingNextRun.begin(), pendingNextRun.end());
@@ -82,15 +94,18 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     }
     reader.close();
 
-    // === Multi-way Merging Phase ===
+    std::cout << "--- Multi-way Merging Phase ---" << std::endl;
     int K = std::min(8, (int)(memLimit / BUF_SIZE / 2));
     std::vector<std::string> currentRuns = runs, nextRuns;
     int pass = 1;
 
     while (currentRuns.size() > 1) {
+        std::cout << "Merge pass " << pass << ": " << currentRuns.size() << " runs, merging " << K << " at a time." << std::endl;
         nextRuns.clear();
         for (size_t i = 0; i < currentRuns.size(); i += K) {
             int groupSize = std::min(K, (int)(currentRuns.size() - i));
+            std::cout << "Merging group of " << groupSize << " runs." << std::endl;
+
             std::vector<std::unique_ptr<Buffer>> buffers;
             std::vector<std::unique_ptr<FileReader>> runReaders;
             for (int j = 0; j < groupSize; ++j) {
@@ -129,7 +144,6 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             for (auto& rr : runReaders) rr->close();
             nextRuns.push_back(mergedFile);
 
-            // Clean up the runs that were just merged
             for (int j = 0; j < groupSize; ++j) {
                 if (remove(currentRuns[i + j].c_str()) != 0) {
                     std::cerr << "Error deleting file: " << currentRuns[i + j] << std::endl;
@@ -144,4 +158,5 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     if (!currentRuns.empty()) {
         rename(currentRuns[0].c_str(), outputFile.c_str());
     }
+    std::cout << "Merge sort completed." << std::endl;
 }
