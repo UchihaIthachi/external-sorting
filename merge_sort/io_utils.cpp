@@ -2,7 +2,7 @@
 #include <iostream>
 
 // Buffer implementation
-Buffer::Buffer(size_t size) : capacity(size), data() {
+Buffer::Buffer(size_t size_in_bytes) : capacity(size_in_bytes / sizeof(int)), data() {
     data.reserve(capacity);
 }
 

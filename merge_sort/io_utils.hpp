@@ -6,7 +6,7 @@
 
 class Buffer {
 public:
-    explicit Buffer(size_t size);
+    explicit Buffer(size_t size_in_bytes);
     bool isFull() const;
     void add(int value);
     void clear();

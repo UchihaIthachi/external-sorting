@@ -3,6 +3,7 @@
 #include <vector> 
 #include <string> 
 #include <cstdio> 
+#include <memory>
 
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
     const size_t BUF_SIZE = 1 << 20;  // 1 MB
