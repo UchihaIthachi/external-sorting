@@ -58,8 +58,8 @@ run-ms: $(MS_OUT)
 run-all: run-qs run-ms
 
 # === Input Generation (only one file) ===
-generate-256: $(GEN_OUT)
-	@$(GEN_OUT) data/input_1.txt 256
+generate: $(GEN_OUT)
+	@$(GEN_OUT) data/input_1.txt 32  # decrease for debugging purpose 
 	@echo "Generated 1 × 256MB input file"
 
 # === Cleanup ===

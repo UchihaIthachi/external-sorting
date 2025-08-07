@@ -9,12 +9,12 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     std::cout << "Input file: " << inputFile << std::endl;
     std::cout << "Output file: " << outputFile << std::endl;
 
-    const size_t BUF_SIZE = 1 * 1024 * 1024;  // 1 MB per buffer
+    const size_t BUF_SIZE = 1 * 1024 * 1024;  // 1 MB buffer
     if (memLimit <= 3 * BUF_SIZE) {
-        std::cerr << "Memory limit is too small.\n";
+        std::cerr << "Memory limit too small\n";
         return;
     }
-    IntervalHeap pivotHeap((memLimit - 3 * BUF_SIZE) / sizeof(int));
+    IntervalHeap pivotHeap((memLimit - 3 * BUF_SIZE) / sizeof(int));  // Your fixed interval heap here
 
     std::ifstream in(inputFile, std::ios::binary);
     if (!in) {
@@ -31,15 +31,11 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
         std::cout << "File is small enough to sort in memory." << std::endl;
         std::vector<int> data;
         int x;
-        while (in.read((char*)&x, sizeof(int))) {
-            data.push_back(x);
-        }
+        while (in.read((char*)&x, sizeof(int))) data.push_back(x);
         in.close();
         std::sort(data.begin(), data.end());
         std::ofstream out(outputFile, std::ios::binary);
-        for (int val : data) {
-            out.write((char*)&val, sizeof(int));
-        }
+        for (int val : data) out.write((char*)&val, sizeof(int));
         out.close();
         return;
     }
@@ -50,11 +46,6 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     middleName << "partition_middle_" << recursion_level << ".bin";
     sortedSmallName << "sorted_small_" << recursion_level << ".bin";
     sortedLargeName << "sorted_large_" << recursion_level << ".bin";
-
-    std::cout << "Small partition: " << smallName.str() << std::endl;
-    std::cout << "Large partition: " << largeName.str() << std::endl;
-    std::cout << "Middle partition: " << middleName.str() << std::endl;
-
 
     std::ofstream smallOut(smallName.str(), std::ios::binary);
     std::ofstream largeOut(largeName.str(), std::ios::binary);
@@ -68,10 +59,14 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     }
     std::cout << "Initial pivot heap loaded with " << loaded << " elements." << std::endl;
 
-    std::cout << "Getting pivots..." << std::endl;
     int minPivot = pivotHeap.getMin();
     int maxPivot = pivotHeap.getMax();
     std::cout << "Pivots: " << minPivot << ", " << maxPivot << std::endl;
+
+    if (minPivot > maxPivot) {
+        std::cerr << "ERROR: minPivot > maxPivot, invalid heap state\n";
+        return;
+    }
 
     std::cout << "Partitioning file..." << std::endl;
     while (in.read((char*)&value, sizeof(int))) {
@@ -94,7 +89,6 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     in.close();
     smallOut.close();
     largeOut.close();
-    std::cout << "File partitioned." << std::endl;
 
     std::ofstream midOut(middleName.str(), std::ios::binary);
     std::cout << "Writing middle partition..." << std::endl;
@@ -116,12 +110,9 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     std::ifstream f3(sortedLargeName.str(), std::ios::binary);
     std::ofstream finalOut(outputFile, std::ios::binary);
 
-    while (f1.read((char*)&value, sizeof(int)))
-        finalOut.write((char*)&value, sizeof(int));
-    while (f2.read((char*)&value, sizeof(int)))
-        finalOut.write((char*)&value, sizeof(int));
-    while (f3.read((char*)&value, sizeof(int)))
-        finalOut.write((char*)&value, sizeof(int));
+    while (f1.read((char*)&value, sizeof(int))) finalOut.write((char*)&value, sizeof(int));
+    while (f2.read((char*)&value, sizeof(int))) finalOut.write((char*)&value, sizeof(int));
+    while (f3.read((char*)&value, sizeof(int))) finalOut.write((char*)&value, sizeof(int));
 
     f1.close();
     f2.close();
