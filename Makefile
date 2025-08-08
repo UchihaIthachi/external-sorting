@@ -48,19 +48,33 @@ $(CMP_OUT): $(CMP_SRC)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 	@echo "Built: $@"
 
-# === Run Targets (only one file) ===
+# === Run Targets ===
+# These can be overridden from the command line, e.g., make run-ms INPUT_FILE=...
+INPUT_FILE ?= data/input_1.txt
+QS_OUTPUT_FILE ?= data/sorted_qs_1.txt
+MS_OUTPUT_FILE ?= data/sorted_ms_1.txt
+MEM_LIMIT ?= 16777216
+
 run-qs: $(QS_OUT)
-	@$(QS_OUT) data/input_1.txt data/sorted_qs_1.txt 16777216
+	@$(QS_OUT) $(INPUT_FILE) $(QS_OUTPUT_FILE) $(MEM_LIMIT)
 
 run-ms: $(MS_OUT)
-	@$(MS_OUT) data/input_1.txt data/sorted_ms_1.txt 16777216
+	@$(MS_OUT) $(INPUT_FILE) $(MS_OUTPUT_FILE) $(MEM_LIMIT)
 
 run-all: run-qs run-ms
 
-# === Input Generation (only one file) ===
-generate: $(GEN_OUT)
+# === Input Generation ===
+GEN_OUT = $(BIN_DIR)/generate_input
+
+.PHONY: generate generate-3-files
+generate: generate-3-files
+
+generate-3-files: $(GEN_OUT)
+	@echo "--- Generating 3 input files (256MB each) ---"
 	@$(GEN_OUT) data/input_1.txt 256
-	@echo "Generated 1 × 256MB input file"
+	@$(GEN_OUT) data/input_2.txt 256
+	@$(GEN_OUT) data/input_3.txt 256
+	@echo "--- Input file generation complete ---"
 
 # === Cleanup ===
 clean:
@@ -99,5 +113,23 @@ verify-ms: $(MS_OUT) $(VS_OUT)
 	@echo "----------------------------"
 
 # === Declare Phony Targets ===
+# === Report Generation ===
+REPORT_SRC = scripts/generate_report.cpp
+REPORT_OUT = $(BIN_DIR)/generate_report
+TIME_SCRIPT = scripts/run_and_time.sh
+PLOT_SCRIPT = report/plot_merge_sort_time.py
+TEX_OUT = report/report.tex
+
+$(REPORT_OUT): $(REPORT_SRC)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	@echo "Built: $@"
+
+report: $(REPORT_OUT) generate-3-files
+	@echo "--- Running experiments and generating report ---"
+	@bash $(TIME_SCRIPT)
+	@python3 $(PLOT_SCRIPT)
+	@$(REPORT_OUT) > $(TEX_OUT)
+	@echo "--- Report generation complete: $(TEX_OUT) ---"
+
 .PHONY: all clean clean-partitions quick_sort merge_sort scripts \
-        run-qs run-ms run-all generate-256 verify-qs verify-ms
+        run-qs run-ms run-all generate-256 verify-qs verify-ms report

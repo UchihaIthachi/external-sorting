@@ -23,8 +23,8 @@ This will create the executables in the `bin` directory.
 To run the quick sort algorithm on a 256MB file, run the following commands:
 
 ```
-make generate-256
-make run-qs-256
+make generate
+make run-qs
 ```
 
 To run the merge sort algorithm, you can use the `run-ms` target:
