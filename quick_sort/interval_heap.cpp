@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 IntervalHeap::IntervalHeap(size_t capacity) : capacity(capacity) {
-    heap.reserve(capacity / 2 + 1);  // approx capacity / 2 nodes
+    heap.reserve(capacity / 2 + 1);
 }
 
 bool IntervalHeap::isFull() const {
@@ -40,7 +40,6 @@ void IntervalHeap::insert(int value) {
     Node& lastNode = heap.back();
 
     if (lastNode.hasSingle) {
-        // Insert second element into last node and order min/max
         if (value < lastNode.left) {
             lastNode.right = lastNode.left;
             lastNode.left = value;
@@ -49,22 +48,18 @@ void IntervalHeap::insert(int value) {
         }
         lastNode.hasSingle = false;
 
-        // Sift up min side and max side
         siftUpMin(heap.size() - 1);
         siftUpMax(heap.size() - 1);
     } else {
-        // Create new node with single element
         heap.emplace_back(value);
-        // No need to sift, it's a single element node
-        // But must maintain heap property upwards
         siftUpMin(heap.size() - 1);
         siftUpMax(heap.size() - 1);
     }
 }
 
 int IntervalHeap::removeMin() {
-    if (isEmpty()) throw std::runtime_error("Heap is empty, removeMin()");
     std::cerr << "  removeMin called" << std::endl;
+    if (isEmpty()) throw std::runtime_error("Heap is empty, removeMin()");
     int minVal = heap[0].left;
 
     if (heap.size() == 1 && heap[0].hasSingle) {
@@ -75,12 +70,9 @@ int IntervalHeap::removeMin() {
     Node& lastNode = heap.back();
 
     if (lastNode.hasSingle) {
-        // Move lastNode.left to root.left
         heap[0].left = lastNode.left;
         heap.pop_back();
     } else {
-        // Move lastNode.left to root.left, then
-        // lastNode.right becomes new single element
         heap[0].left = lastNode.left;
         lastNode.left = lastNode.right;
         lastNode.hasSingle = true;
@@ -88,7 +80,6 @@ int IntervalHeap::removeMin() {
 
     siftDownMin(0);
 
-    // Fix min/max order in root node if violated
     if (!heap.empty() && !heap[0].hasSingle && heap[0].left > heap[0].right) {
         std::cerr << "  fixup in removeMin" << std::endl;
         std::swap(heap[0].left, heap[0].right);
@@ -98,8 +89,8 @@ int IntervalHeap::removeMin() {
 }
 
 int IntervalHeap::removeMax() {
+    std::cerr << "  removeMax called" << std::endl;
     if (isEmpty()) throw std::runtime_error("Heap is empty, removeMax()");
-
     int maxVal;
 
     if (heap.size() == 1 && heap[0].hasSingle) {
@@ -117,13 +108,14 @@ int IntervalHeap::removeMax() {
         heap.pop_back();
     } else {
         heap[0].right = lastNode.right;
-        lastNode.right = lastNode.left;
+        lastNode.right = 0;
         lastNode.hasSingle = true;
     }
 
     siftDownMax(0);
 
     if (!heap.empty() && !heap[0].hasSingle && heap[0].left > heap[0].right) {
+        std::cerr << "  fixup in removeMax" << std::endl;
         std::swap(heap[0].left, heap[0].right);
     }
 
@@ -131,11 +123,11 @@ int IntervalHeap::removeMax() {
 }
 
 void IntervalHeap::siftUpMin(size_t i) {
+    std::cerr << "  siftUpMin(" << i << ")" << std::endl;
     while (i > 0) {
         size_t p = parent(i);
         if (heap[i].left < heap[p].left) {
             std::swap(heap[i].left, heap[p].left);
-            // Make sure max elements stay valid
             if (!heap[i].hasSingle && heap[i].left > heap[i].right)
                 std::swap(heap[i].left, heap[i].right);
             if (!heap[p].hasSingle && heap[p].left > heap[p].right)
@@ -148,25 +140,22 @@ void IntervalHeap::siftUpMin(size_t i) {
 }
 
 void IntervalHeap::siftUpMax(size_t i) {
+    std::cerr << "  siftUpMax(" << i << ")" << std::endl;
     while (i > 0) {
         size_t p = parent(i);
-        // For max side we compare right elements if exist, else left
         int currMax = heap[i].hasSingle ? heap[i].left : heap[i].right;
         int parentMax = heap[p].hasSingle ? heap[p].left : heap[p].right;
 
         if (currMax > parentMax) {
-            if (heap[i].hasSingle) {
-                if (heap[p].hasSingle) {
-                    std::swap(heap[i].left, heap[p].left);
-                } else {
-                    std::swap(heap[i].left, heap[p].right);
-                }
-            } else {
-                if (heap[p].hasSingle) {
-                    std::swap(heap[i].right, heap[p].left);
-                } else {
-                    std::swap(heap[i].right, heap[p].right);
-                }
+            int& val_i = heap[i].hasSingle ? heap[i].left : heap[i].right;
+            int& val_p = heap[p].hasSingle ? heap[p].left : heap[p].right;
+            std::swap(val_i, val_p);
+
+            if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
+                std::swap(heap[i].left, heap[i].right);
+            }
+            if (!heap[p].hasSingle && heap[p].left > heap[p].right) {
+                std::swap(heap[p].left, heap[p].right);
             }
             i = p;
         } else {
@@ -189,7 +178,6 @@ void IntervalHeap::siftDownMin(size_t i) {
         if (smallest != i) {
             std::cerr << "    siftDownMin swap " << i << " (" << heap[i].left << ") with " << smallest << " (" << heap[smallest].left << ")" << std::endl;
             std::swap(heap[i].left, heap[smallest].left);
-            // Fix max if min and max out of order
             if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
                 std::cerr << "    fix interval at " << i << std::endl;
                 std::swap(heap[i].left, heap[i].right);
@@ -206,6 +194,7 @@ void IntervalHeap::siftDownMin(size_t i) {
 }
 
 void IntervalHeap::siftDownMax(size_t i) {
+    std::cerr << "  siftDownMax(" << i << ")" << std::endl;
     size_t n = heap.size();
     while (true) {
         size_t left = leftChild(i);
@@ -220,18 +209,16 @@ void IntervalHeap::siftDownMax(size_t i) {
         if (right < n && getRightMax(right) > getRightMax(largest)) largest = right;
 
         if (largest != i) {
-            if (heap[i].hasSingle) {
-                if (heap[largest].hasSingle) {
-                    std::swap(heap[i].left, heap[largest].left);
-                } else {
-                    std::swap(heap[i].left, heap[largest].right);
-                }
-            } else {
-                if (heap[largest].hasSingle) {
-                    std::swap(heap[i].right, heap[largest].left);
-                } else {
-                    std::swap(heap[i].right, heap[largest].right);
-                }
+            std::cerr << "    siftDownMax swap " << i << " with " << largest << std::endl;
+            int& val_i = heap[i].hasSingle ? heap[i].left : heap[i].right;
+            int& val_largest = heap[largest].hasSingle ? heap[largest].left : heap[largest].right;
+            std::swap(val_i, val_largest);
+
+            if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
+                std::swap(heap[i].left, heap[i].right);
+            }
+            if (!heap[largest].hasSingle && heap[largest].left > heap[largest].right) {
+                std::swap(heap[largest].left, heap[largest].right);
             }
             i = largest;
         } else {
