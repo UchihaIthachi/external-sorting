@@ -4,7 +4,7 @@ import os
 
 DATA_FILE = 'report/times.dat'
 
-def plot_times():
+def plot_times_comparison():
     if not os.path.exists(DATA_FILE):
         print(f"Data file not found: {DATA_FILE}")
         return
@@ -16,41 +16,40 @@ def plot_times():
         print(f"Data file is empty: {DATA_FILE}")
         return
 
+    # Prepare run labels and times, converting -1 and failed runs to NaN for plotting
+    runs = [f"Run {int(i)}" for i in df['Run']]
+    ms_times = pd.to_numeric(df['MergeSortTime'], errors='coerce')
+    qs_times = pd.to_numeric(df['QuickSortTime'], errors='coerce')
+    ms_times = ms_times.mask(ms_times < 0)
+    qs_times = qs_times.mask(qs_times < 0)
 
-    # Filter out failed runs for plotting
-    successful_runs = df[df['MergeSortTime'] >= 0]
+    x = range(len(runs))
+    width = 0.35  # Bar width
 
-    if successful_runs.empty:
-        print("No successful merge sort runs to plot.")
-        # Create an empty plot as a placeholder
-        plt.figure(figsize=(8, 5))
-        plt.text(0.5, 0.5, 'No successful runs to plot', ha='center', va='center')
-        plt.title('Merge Sort Execution Time')
-        plt.xlabel('Test Run')
-        plt.ylabel('Execution Time (s)')
-    else:
-        run_labels = [f"Run {i}" for i in successful_runs['Run']]
-        merge_sort_times = successful_runs['MergeSortTime']
+    plt.figure(figsize=(9, 5))
+    bar1 = plt.bar([i - width/2 for i in x], ms_times, width, label='Merge Sort', color='skyblue')
+    bar2 = plt.bar([i + width/2 for i in x], qs_times, width, label='Quick Sort', color='orange')
 
-        plt.figure(figsize=(8, 5))
-        bars = plt.bar(run_labels, merge_sort_times, color='skyblue', label='Merge Sort')
-        
-        # Add time labels on top of bars
+    # Add time labels on top of bars
+    for bars in [bar1, bar2]:
         for bar in bars:
             yval = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}s', va='bottom', ha='center')
+            if not pd.isna(yval):
+                plt.text(bar.get_x() + bar.get_width()/2.0, yval, f'{yval:.2f}s', va='bottom', ha='center', fontsize=9)
 
-        plt.ylabel('Execution Time (s)')
-        plt.xlabel('Test Run')
-        plt.title('Execution Time of Merge Sort Across 3 Runs (256MB Input)')
-        if not merge_sort_times.empty:
-            plt.ylim(0, max(merge_sort_times) * 1.2) # Add some space at the top
-        plt.legend()
-    
-    output_path = 'report/figures/merge_sort_time.png'
+    plt.xticks(x, runs)
+    plt.ylabel('Execution Time (s)')
+    plt.xlabel('Test Run')
+    plt.title('Execution Time Comparison: Merge Sort vs Quick Sort (256MB Input)')
+    plt.legend()
+    ymax = max([y for y in list(ms_times.dropna()) + list(qs_times.dropna())] + [1])
+    plt.ylim(0, ymax * 1.2)
+
+    output_path = 'report/figures/sort_times_comparison.png'
+    plt.tight_layout()
     plt.savefig(output_path)
     print(f"Plot saved to {output_path}")
     plt.close()
 
 if __name__ == '__main__':
-    plot_times()
+    plot_times_comparison()

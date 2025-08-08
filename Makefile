@@ -112,12 +112,11 @@ verify-ms: $(MS_OUT) $(VS_OUT)
 	@$(VS_OUT) data/sorted_ms_1.txt
 	@echo "----------------------------"
 
-# === Declare Phony Targets ===
 # === Report Generation ===
 REPORT_SRC = scripts/generate_report.cpp
 REPORT_OUT = $(BIN_DIR)/generate_report
 TIME_SCRIPT = scripts/run_and_time.sh
-PLOT_SCRIPT = report/plot_merge_sort_time.py
+PLOT_SCRIPT = scripts/plot_merge_sort_time.py
 TEX_OUT = report/report.tex
 
 $(REPORT_OUT): $(REPORT_SRC)
@@ -126,10 +125,11 @@ $(REPORT_OUT): $(REPORT_SRC)
 
 report: $(REPORT_OUT) generate-3-files
 	@echo "--- Running experiments and generating report ---"
-	@bash $(TIME_SCRIPT)
-	@python3 $(PLOT_SCRIPT)
+	# @bash $(TIME_SCRIPT)
+	@python $(PLOT_SCRIPT)
 	@$(REPORT_OUT) > $(TEX_OUT)
 	@echo "--- Report generation complete: $(TEX_OUT) ---"
 
+# === Declare Phony Targets ===
 .PHONY: all clean clean-partitions quick_sort merge_sort scripts \
         run-qs run-ms run-all generate-256 verify-qs verify-ms report

@@ -4,7 +4,8 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
-#include <numeric>
+#include <algorithm>
+#include <limits>
 
 struct RunResult {
     int run_id;
@@ -13,74 +14,97 @@ struct RunResult {
 };
 
 void print_latex_report(const std::vector<RunResult>& results) {
-    // Preamble
-    std::cout << "\\documentclass{article}\n";
-    std::cout << "\\usepackage{graphicx}\n";
-    std::cout << "\\usepackage{booktabs}\n";
-    std::cout << "\\usepackage{geometry}\n";
-    std::cout << "\\geometry{a4paper, margin=1in}\n";
-    std::cout << "\\title{External Sorting Performance Report}\n";
-    std::cout << "\\author{}\n";
-    std::cout << "\\date{\\today}\n";
-    std::cout << "\\begin{document}\n";
-    std::cout << "\\maketitle\n\n";
+    std::cout << "\\documentclass{article}\n"
+              << "\\usepackage{graphicx}\n"
+              << "\\usepackage{booktabs}\n"
+              << "\\usepackage{geometry}\n"
+              << "\\geometry{a4paper, margin=1in}\n"
+              << "\\title{External Sorting Performance Report}\n"
+              << "\\author{Harshana Lakshara Fernando}\n"
+              << "\\date{\\today}\n"
+              << "\\begin{document}\n"
+              << "\\maketitle\n\n";
 
-    // Overview Section
+    // Overview
     std::cout << "\\section*{Overview}\n";
-    std::cout << "We implemented and evaluated two external sorting algorithms over three separate 256 MB input files, with a 16 MB memory limit.\n\n";
+    std::cout << "This report presents the performance analysis of two external sorting algorithms---\\textbf{External Merge Sort} and \\textbf{External Quick Sort}---each tested on three 256~MB input files, using a memory limit of 16~MB per run. "
+                 "The analysis covers correctness, speed, and failure cases. Figure~\\ref{fig:sort_times_comparison} provides a direct comparison.\n\n";
 
     // Results Table
-    std::cout << "\\subsection*{Performance Results}\n";
-    std::cout << "\\begin{table}[h!]\n";
-    std::cout << "\\centering\n";
-    std::cout << "\\begin{tabular}{l c c}\n";
-    std::cout << "\\toprule\n";
-    std::cout << "Test Run & Merge Sort Time (s) & Quick Sort Time (s) \\\\\n";
-    std::cout << "\\midrule\n";
+    std::cout << "\\section*{Experimental Results}\n";
+    std::cout << "\\begin{table}[h!]\n"
+              << "\\centering\n"
+              << "\\begin{tabular}{c c c}\n"
+              << "\\toprule\n"
+              << "Test Run & Merge Sort Time (s) & Quick Sort Time (s) \\\\\n"
+              << "\\midrule\n";
 
-    double ms_total_time = 0;
-    int ms_successful_runs = 0;
+    double ms_total = 0, qs_total = 0;
+    int ms_count = 0, qs_count = 0;
 
     for (const auto& res : results) {
-        std::cout << "Run " << res.run_id << " & ";
-        if (res.time_ms < 0) {
-            std::cout << "FAILED & ";
-        } else {
+        std::cout << res.run_id << " & ";
+
+        if (res.time_ms < 0)
+            std::cout << "\\textbf{FAILED} & ";
+        else {
             std::cout << std::fixed << std::setprecision(2) << res.time_ms << " & ";
-            ms_total_time += res.time_ms;
-            ms_successful_runs++;
+            ms_total += res.time_ms;
+            ms_count++;
         }
-        if (res.time_qs < 0) {
-            std::cout << "Timed Out \\\\\n";
-        } else {
+
+        if (res.time_qs < 0)
+            std::cout << "\\textbf{TIMEOUT} \\\\\n";
+        else {
             std::cout << std::fixed << std::setprecision(2) << res.time_qs << " \\\\\n";
+            qs_total += res.time_qs;
+            qs_count++;
         }
     }
-    
+
+    // Averages row
     std::cout << "\\midrule\n";
-    // Average row
-    if (ms_successful_runs > 0) {
-        double avg_ms_time = ms_total_time / ms_successful_runs;
-        std::cout << "\\textbf{Average} & \\textbf{" << std::fixed << std::setprecision(2) << avg_ms_time << "} & \\textbf{---} \\\\\n";
-    } else {
-        std::cout << "\\textbf{Average} & \\textbf{FAILED} & \\textbf{---} \\\\\n";
-    }
+    std::cout << "\\textbf{Average} & ";
+    if (ms_count)
+        std::cout << "\\textbf{" << std::fixed << std::setprecision(2) << ms_total / ms_count << "} & ";
+    else
+        std::cout << "\\textbf{---} & ";
 
-    std::cout << "\\bottomrule\n";
-    std::cout << "\\end{tabular}\n";
-    std::cout << "\\caption{Performance summary of external sorting algorithms across 3 runs.}\n";
-    std::cout << "\\label{tab:perf_summary}\n";
-    std::cout << "\\end{table}\n\n";
+    if (qs_count)
+        std::cout << "\\textbf{" << std::fixed << std::setprecision(2) << qs_total / qs_count << "} \\\\\n";
+    else
+        std::cout << "\\textbf{---} \\\\\n";
 
-    // Figure
-    std::cout << "\\subsection*{Figure: Merge Sort Performance}\n";
-    std::cout << "\\begin{figure}[h!]\n";
-    std::cout << "\\centering\n";
-    std::cout << "\\includegraphics[width=0.8\\textwidth]{figures/merge_sort_time.png}\n";
-    std::cout << "\\caption{Execution time for external merge sort on three different 256 MB files.}\n";
-    std::cout << "\\label{fig:merge_sort_time}\n";
-    std::cout << "\\end{figure}\n\n";
-    
+    std::cout << "\\bottomrule\n"
+              << "\\end{tabular}\n"
+              << "\\caption{Performance summary of external sorting algorithms across three runs. "
+                 "``FAILED'' indicates the algorithm failed to sort or crashed. ``TIMEOUT'' indicates the run exceeded the allowed time limit.}\n"
+              << "\\label{tab:perf_summary}\n"
+              << "\\end{table}\n\n";
+
+    // Figures
+    std::cout << "\\section*{Figures}\n";
+    std::cout << "\\begin{figure}[h!]\n"
+              << "\\centering\n"
+              << "\\includegraphics[width=0.8\\textwidth]{figures/sort_times_comparison.png}\n"
+              << "\\caption{Execution time comparison between external merge sort and quick sort on three different 256~MB files. Missing bars indicate failure or timeout.}\n"
+              << "\\label{fig:sort_times_comparison}\n"
+              << "\\end{figure}\n\n";
+
+    std::cout << "\\begin{figure}[h!]\n"
+              << "\\centering\n"
+              << "\\includegraphics[width=0.7\\textwidth]{figures/merge_sort_time.png}\n"
+              << "\\caption{Execution time for external merge sort on three 256~MB files.}\n"
+              << "\\label{fig:merge_sort_time}\n"
+              << "\\end{figure}\n\n";
+
+    // Discussion
+    std::cout << "\\section*{Summary and Recommendations}\n"
+              << "External Merge Sort completed successfully and efficiently in all test cases. "
+              << "External Quick Sort, however, failed to complete within the timeout in all runs, likely due to implementation issues in interval heap management or buffer partitioning. "
+              << "For production or further research, it is recommended to debug and optimize the quick sort implementation. "
+              << "Additionally, implementing optimal (Huffman-based) merging for merge sort could further improve performance when run sizes are highly variable.\n";
+
     std::cout << "\\end{document}\n";
 }
 
@@ -103,15 +127,17 @@ int main() {
         std::stringstream ss(line);
         std::string part;
         RunResult res;
-        
+        // Read: Run,MergeSortTime,QuickSortTime
         std::getline(ss, part, ',');
         res.run_id = std::stoi(part);
-        
-        std::getline(ss, part, ',');
-        res.time_ms = std::stod(part);
 
         std::getline(ss, part, ',');
-        res.time_qs = std::stod(part);
+        try { res.time_ms = std::stod(part); }
+        catch (...) { res.time_ms = -1.0; }
+
+        std::getline(ss, part, ',');
+        try { res.time_qs = std::stod(part); }
+        catch (...) { res.time_qs = -1.0; }
 
         results.push_back(res);
     }

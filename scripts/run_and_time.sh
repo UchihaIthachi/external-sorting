@@ -40,10 +40,12 @@ do
     echo "  Merge Sort Time: $ms_time seconds"
 
     # Time the quick sort with a 5-minute timeout
-    echo "  Timing External Quick Sort (with 5-minute timeout)..."
+    echo "  Timing External Quick Sort..."
+    # echo "  Timing External Quick Sort (with 5-minute timeout)..."
     
     # Use a subshell with timeout to ensure 'time' can be found
-    qs_time=$( (timeout 300s bash -c "time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} >/dev/null" ) 2>&1 )
+    qs_time=$( (time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} >/dev/null) 2>&1 )
+    # qs_time=$( (timeout 300s bash -c "time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} >/dev/null" ) 2>&1 )
     qs_exit_code=$?
 
     if [ $qs_exit_code -eq 124 ]; then
