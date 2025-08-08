@@ -1,11 +1,9 @@
 #include "tournament_tree.hpp"
-
 TournamentTree::TournamentTree(int k) : size(k), tree(2 * k - 1) {}
 
 void TournamentTree::initialize(const std::vector<int>& initialKeys, const std::vector<int>& runIdx) {
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i)
         tree[size - 1 + i] = {initialKeys[i], runIdx[i]};
-    }
     for (int i = size - 2; i >= 0; --i) {
         const TreeNode& left = tree[2 * i + 1];
         const TreeNode& right = tree[2 * i + 2];
@@ -13,13 +11,8 @@ void TournamentTree::initialize(const std::vector<int>& initialKeys, const std::
     }
 }
 
-int TournamentTree::getMinKey() const {
-    return tree[0].key;
-}
-
-int TournamentTree::getMinSource() const {
-    return tree[0].sourceRun;
-}
+int TournamentTree::getMinKey() const { return tree[0].key; }
+int TournamentTree::getMinSource() const { return tree[0].sourceRun; }
 
 void TournamentTree::replaceKey(int newKey, int runIndex) {
     int idx = size - 1;

@@ -16,10 +16,8 @@ public:
     void replaceKey(int newKey, int runIndex);
     void removeKey();
     bool empty() const;
-
 private:
     std::vector<TreeNode> tree;
     int size;
-    void buildTree();
     void siftUp(int index);
 };

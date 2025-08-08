@@ -4,18 +4,21 @@
 #include "logger.hpp"
 #include <iostream>
 #include <vector>
-#include <string> 
-#include <cstdio> 
+#include <string>
+#include <cstdio>
 #include <memory>
 #include <sstream>
+#include <climits>
 
+// External Merge Sort using Tournament Tree (min-winner tree)
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
     std::cout << "=== External Merge Sort ===" << std::endl;
     std::cout << "Input file: " << inputFile << std::endl;
     std::cout << "Output file: " << outputFile << std::endl;
     std::cout << "Memory limit: " << memLimit << " bytes" << std::endl;
 
-    const size_t BUF_SIZE = 1 << 20;  // 1 MB
+    // --------- Phase 1: Run Generation (Replacement Selection) ---------
+    const size_t BUF_SIZE = 1 << 20; // 1 MB per buffer
     Buffer inputBuf(BUF_SIZE), outputBuf(BUF_SIZE);
     FileReader reader(inputFile, inputBuf);
 
@@ -27,8 +30,10 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     size_t memoryPerKey = sizeof(int) + sizeof(bool) + sizeof(int) + (2 * sizeof(TreeNode));
     size_t maxKeys = memForDataStructures / memoryPerKey;
 
-    TournamentTree tree(maxKeys);
+    TournamentTree tree(static_cast<int>(maxKeys));
     std::cout << "Max keys in memory: " << maxKeys << std::endl;
+
+    // Initial load: fill tournament tree with as many records as possible
     while (treeKeys.size() < maxKeys && reader.hasNext()) {
         treeKeys.push_back(reader.next());
         keyFrozen.push_back(false);
@@ -38,10 +43,10 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     std::vector<int> runIndex(treeKeys.size(), 0);
     tree.initialize(treeKeys, runIndex);
 
-    int INF_KEY = INT_MAX;
+    const int INF_KEY = INT_MAX;
     int lastOutput = INT_MIN;
     int runCount = 0;
-    std::unique_ptr<FileWriter> runWriter = std::make_unique<FileWriter>("run0.bin", outputBuf);
+    auto runWriter = std::make_unique<FileWriter>("run0.bin", outputBuf);
 
     std::cout << "--- Run Creation Phase ---" << std::endl;
     while (!tree.empty()) {
@@ -63,6 +68,7 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             }
         }
 
+        // When all remaining keys are frozen (INF_KEY), finish current run and start a new one
         if (tree.getMinKey() == INF_KEY) {
             runWriter->flush();
             runWriter->close();
@@ -96,23 +102,26 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
     }
     reader.close();
 
+    // --------- Phase 2: Multi-way Merge (K-way Merge with Tournament Tree) ---------
     std::cout << "--- Multi-way Merging Phase ---" << std::endl;
-    int K = std::min(8, (int)(memLimit / BUF_SIZE / 2));
+    int K = std::min(8, static_cast<int>(memLimit / BUF_SIZE / 2));
     std::vector<std::string> currentRuns = runs, nextRuns;
     int pass = 1;
 
     while (currentRuns.size() > 1) {
-        std::cout << "Merge pass " << pass << ": " << currentRuns.size() << " runs, merging " << K << " at a time." << std::endl;
+        std::cout << "Merge pass " << pass << ": " << currentRuns.size()
+                  << " runs, merging " << K << " at a time." << std::endl;
         nextRuns.clear();
+
         for (size_t i = 0; i < currentRuns.size(); i += K) {
-            int groupSize = std::min(K, (int)(currentRuns.size() - i));
+            int groupSize = std::min(K, static_cast<int>(currentRuns.size() - i));
             std::cout << "Merging group of " << groupSize << " runs." << std::endl;
 
             std::vector<std::unique_ptr<Buffer>> buffers;
             std::vector<std::unique_ptr<FileReader>> runReaders;
             for (int j = 0; j < groupSize; ++j) {
                 buffers.push_back(std::make_unique<Buffer>(BUF_SIZE));
-                runReaders.push_back(std::make_unique<FileReader>(currentRuns[i+j], *buffers.back()));
+                runReaders.push_back(std::make_unique<FileReader>(currentRuns[i + j], *buffers.back()));
             }
 
             TournamentTree mergeTree(groupSize);
@@ -123,7 +132,8 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
             }
             mergeTree.initialize(initKeys, runIdx);
 
-            std::string mergedFile = "merge_pass" + std::to_string(pass) + "_run" + std::to_string(i/K) + ".bin";
+            std::string mergedFile = "merge_pass" + std::to_string(pass)
+                                   + "_run" + std::to_string(i / K) + ".bin";
             FileWriter mergedOut(mergedFile, outputBuf);
 
             while (!mergeTree.empty()) {
@@ -142,10 +152,12 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
                 if (mergeTree.getMinKey() == INF_KEY) break;
             }
 
-            mergedOut.flush(); mergedOut.close();
+            mergedOut.flush();
+            mergedOut.close();
             for (auto& rr : runReaders) rr->close();
             nextRuns.push_back(mergedFile);
 
+            // Optional: Delete old temporary runs to save disk space
             for (int j = 0; j < groupSize; ++j) {
                 if (remove(currentRuns[i + j].c_str()) != 0) {
                     std::stringstream ss;
@@ -154,7 +166,6 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
                 }
             }
         }
-
         currentRuns.swap(nextRuns);
         pass++;
     }
