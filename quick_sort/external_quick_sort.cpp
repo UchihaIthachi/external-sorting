@@ -69,22 +69,49 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     }
 
     std::cout << "Partitioning file..." << std::endl;
+    long long count = 0;
+    int last_h_min = 0;
+    bool violation_found = false;
     while (in.read((char*)&value, sizeof(int))) {
-        if (value <= minPivot) {
+        int h_min = pivotHeap.getMin();
+        int h_max = pivotHeap.getMax();
+
+        if (!violation_found && h_min < last_h_min) {
+            std::cerr << "!!! VIOLATION: h_min decreased! " << last_h_min << " -> " << h_min << " at item " << count << std::endl;
+            violation_found = true;
+        }
+        last_h_min = h_min;
+
+        bool should_log = (count >= 611330 && count <= 611340) || (violation_found && count < 611340);
+
+        if (should_log) {
+             std::cerr << "i=" << count << " | val=" << value
+                      << " | h_min=" << h_min << ", h_max=" << h_max;
+        }
+
+
+        if (value <= h_min) {
+            if (should_log) std::cerr << " -> small" << std::endl;
             smallOut.write((char*)&value, sizeof(int));
-        } else if (value >= maxPivot) {
+        } else if (value >= h_max) {
+            if (should_log) std::cerr << " -> large" << std::endl;
             largeOut.write((char*)&value, sizeof(int));
         } else {
             int evicted;
-            if (value < ((long long)minPivot + maxPivot) / 2) {
+            if (value < ((long long)h_min + h_max) / 2) {
+                if (should_log) std::cerr << " | evict min path...";
                 evicted = pivotHeap.removeMin();
+                if (should_log) std::cerr << " evicted=" << evicted << ", insert " << value << std::endl;
                 smallOut.write((char*)&evicted, sizeof(int));
             } else {
+                if (should_log) std::cerr << " | evict max path...";
                 evicted = pivotHeap.removeMax();
+                if (should_log) std::cerr << " evicted=" << evicted << ", insert " << value << std::endl;
                 largeOut.write((char*)&evicted, sizeof(int));
             }
             pivotHeap.insert(value);
         }
+        count++;
     }
     in.close();
     smallOut.close();

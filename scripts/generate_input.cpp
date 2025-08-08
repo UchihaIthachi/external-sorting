@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     }
 
     outFile.close();
-    std::cout << "File '" << fileName << "' generated (" << fileSizeMB << " MB).\n";
+    std::cout << "File '" << fileName << "' generated (" << fileSizeMB << " MB, " 
+          << intsToWrite << " numbers).\n";
     return 0;
 }

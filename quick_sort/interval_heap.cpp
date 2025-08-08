@@ -27,6 +27,7 @@ int IntervalHeap::getMax() const {
 }
 
 void IntervalHeap::insert(int value) {
+    std::cerr << "  insert(" << value << ")" << std::endl;
     if (isFull()) {
         std::cerr << "Heap is full, cannot insert " << value << std::endl;
         return;
@@ -63,7 +64,7 @@ void IntervalHeap::insert(int value) {
 
 int IntervalHeap::removeMin() {
     if (isEmpty()) throw std::runtime_error("Heap is empty, removeMin()");
-
+    std::cerr << "  removeMin called" << std::endl;
     int minVal = heap[0].left;
 
     if (heap.size() == 1 && heap[0].hasSingle) {
@@ -89,6 +90,7 @@ int IntervalHeap::removeMin() {
 
     // Fix min/max order in root node if violated
     if (!heap.empty() && !heap[0].hasSingle && heap[0].left > heap[0].right) {
+        std::cerr << "  fixup in removeMin" << std::endl;
         std::swap(heap[0].left, heap[0].right);
     }
 
@@ -106,7 +108,7 @@ int IntervalHeap::removeMax() {
         return maxVal;
     }
 
-    maxVal = heap[0].right;
+    maxVal = getMax();
 
     Node& lastNode = heap.back();
 
@@ -174,6 +176,7 @@ void IntervalHeap::siftUpMax(size_t i) {
 }
 
 void IntervalHeap::siftDownMin(size_t i) {
+    std::cerr << "  siftDownMin(" << i << ")" << std::endl;
     size_t n = heap.size();
     while (true) {
         size_t left = leftChild(i);
@@ -184,12 +187,17 @@ void IntervalHeap::siftDownMin(size_t i) {
         if (right < n && heap[right].left < heap[smallest].left) smallest = right;
 
         if (smallest != i) {
+            std::cerr << "    siftDownMin swap " << i << " (" << heap[i].left << ") with " << smallest << " (" << heap[smallest].left << ")" << std::endl;
             std::swap(heap[i].left, heap[smallest].left);
             // Fix max if min and max out of order
-            if (!heap[i].hasSingle && heap[i].left > heap[i].right)
+            if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
+                std::cerr << "    fix interval at " << i << std::endl;
                 std::swap(heap[i].left, heap[i].right);
-            if (!heap[smallest].hasSingle && heap[smallest].left > heap[smallest].right)
+            }
+            if (!heap[smallest].hasSingle && heap[smallest].left > heap[smallest].right) {
+                std::cerr << "    fix interval at " << smallest << std::endl;
                 std::swap(heap[smallest].left, heap[smallest].right);
+            }
             i = smallest;
         } else {
             break;

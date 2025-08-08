@@ -9,6 +9,8 @@ bin/
 *.out
 *.exe
 *.o
+stderr.log
+stdout.log
 
 # === OS & Editor Junk ===
 .DS_Store
