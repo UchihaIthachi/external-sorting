@@ -1,11 +1,13 @@
 #include "external_merge_sort.hpp"
 #include "io_utils.hpp"
 #include "tournament_tree.hpp"
+#include "logger.hpp"
 #include <iostream>
 #include <vector>
 #include <string> 
 #include <cstdio> 
 #include <memory>
+#include <sstream>
 
 void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
     std::cout << "=== External Merge Sort ===" << std::endl;
@@ -146,7 +148,9 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
 
             for (int j = 0; j < groupSize; ++j) {
                 if (remove(currentRuns[i + j].c_str()) != 0) {
-                    std::cerr << "Error deleting file: " << currentRuns[i + j] << std::endl;
+                    std::stringstream ss;
+                    ss << "Error deleting file: " << currentRuns[i + j];
+                    LOG_DEBUG(ss.str());
                 }
             }
         }

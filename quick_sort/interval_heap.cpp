@@ -1,7 +1,9 @@
 #include "interval_heap.hpp"
+#include "logger.hpp"
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 
 IntervalHeap::IntervalHeap(size_t capacity) : capacity(capacity) {
     heap.reserve(capacity / 2 + 1);
@@ -27,9 +29,14 @@ int IntervalHeap::getMax() const {
 }
 
 void IntervalHeap::insert(int value) {
-    std::cerr << "  insert(" << value << ")" << std::endl;
+    std::stringstream ss;
+    ss << "  insert(" << value << ")";
+    LOG_DEBUG(ss.str());
+
     if (isFull()) {
-        std::cerr << "Heap is full, cannot insert " << value << std::endl;
+        std::stringstream ss_full;
+        ss_full << "Heap is full, cannot insert " << value;
+        LOG_DEBUG(ss_full.str());
         return;
     }
     if (heap.empty()) {
@@ -58,7 +65,7 @@ void IntervalHeap::insert(int value) {
 }
 
 int IntervalHeap::removeMin() {
-    std::cerr << "  removeMin called" << std::endl;
+    LOG_DEBUG("  removeMin called");
     if (isEmpty()) throw std::runtime_error("Heap is empty, removeMin()");
     int minVal = heap[0].left;
 
@@ -81,7 +88,7 @@ int IntervalHeap::removeMin() {
     siftDownMin(0);
 
     if (!heap.empty() && !heap[0].hasSingle && heap[0].left > heap[0].right) {
-        std::cerr << "  fixup in removeMin" << std::endl;
+        LOG_DEBUG("  fixup in removeMin");
         std::swap(heap[0].left, heap[0].right);
     }
 
@@ -89,7 +96,7 @@ int IntervalHeap::removeMin() {
 }
 
 int IntervalHeap::removeMax() {
-    std::cerr << "  removeMax called" << std::endl;
+    LOG_DEBUG("  removeMax called");
     if (isEmpty()) throw std::runtime_error("Heap is empty, removeMax()");
     int maxVal;
 
@@ -115,7 +122,7 @@ int IntervalHeap::removeMax() {
     siftDownMax(0);
 
     if (!heap.empty() && !heap[0].hasSingle && heap[0].left > heap[0].right) {
-        std::cerr << "  fixup in removeMax" << std::endl;
+        LOG_DEBUG("  fixup in removeMax");
         std::swap(heap[0].left, heap[0].right);
     }
 
@@ -123,7 +130,9 @@ int IntervalHeap::removeMax() {
 }
 
 void IntervalHeap::siftUpMin(size_t i) {
-    std::cerr << "  siftUpMin(" << i << ")" << std::endl;
+    std::stringstream ss;
+    ss << "  siftUpMin(" << i << ")";
+    LOG_DEBUG(ss.str());
     while (i > 0) {
         size_t p = parent(i);
         if (heap[i].left < heap[p].left) {
@@ -140,7 +149,9 @@ void IntervalHeap::siftUpMin(size_t i) {
 }
 
 void IntervalHeap::siftUpMax(size_t i) {
-    std::cerr << "  siftUpMax(" << i << ")" << std::endl;
+    std::stringstream ss;
+    ss << "  siftUpMax(" << i << ")";
+    LOG_DEBUG(ss.str());
     while (i > 0) {
         size_t p = parent(i);
         int currMax = heap[i].hasSingle ? heap[i].left : heap[i].right;
@@ -165,7 +176,9 @@ void IntervalHeap::siftUpMax(size_t i) {
 }
 
 void IntervalHeap::siftDownMin(size_t i) {
-    std::cerr << "  siftDownMin(" << i << ")" << std::endl;
+    std::stringstream ss;
+    ss << "  siftDownMin(" << i << ")";
+    LOG_DEBUG(ss.str());
     size_t n = heap.size();
     while (true) {
         size_t left = leftChild(i);
@@ -176,15 +189,23 @@ void IntervalHeap::siftDownMin(size_t i) {
         if (right < n && heap[right].left < heap[smallest].left) smallest = right;
 
         if (smallest != i) {
-            std::cerr << "    siftDownMin swap " << i << " (" << heap[i].left << ") with " << smallest << " (" << heap[smallest].left << ")" << std::endl;
+            std::stringstream ss_swap;
+            ss_swap << "    siftDownMin swap " << i << " (" << heap[i].left << ") with " << smallest << " (" << heap[smallest].left << ")";
+            LOG_DEBUG(ss_swap.str());
             std::swap(heap[i].left, heap[smallest].left);
             if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
-                std::cerr << "    fix interval at " << i << std::endl;
+                std::stringstream ss_fix;
+                ss_fix << "    fix interval at " << i;
+                LOG_DEBUG(ss_fix.str());
                 std::swap(heap[i].left, heap[i].right);
+                siftUpMax(i);
             }
             if (!heap[smallest].hasSingle && heap[smallest].left > heap[smallest].right) {
-                std::cerr << "    fix interval at " << smallest << std::endl;
+                std::stringstream ss_fix;
+                ss_fix << "    fix interval at " << smallest;
+                LOG_DEBUG(ss_fix.str());
                 std::swap(heap[smallest].left, heap[smallest].right);
+                siftUpMax(smallest);
             }
             i = smallest;
         } else {
@@ -194,7 +215,9 @@ void IntervalHeap::siftDownMin(size_t i) {
 }
 
 void IntervalHeap::siftDownMax(size_t i) {
-    std::cerr << "  siftDownMax(" << i << ")" << std::endl;
+    std::stringstream ss;
+    ss << "  siftDownMax(" << i << ")";
+    LOG_DEBUG(ss.str());
     size_t n = heap.size();
     while (true) {
         size_t left = leftChild(i);
@@ -209,16 +232,20 @@ void IntervalHeap::siftDownMax(size_t i) {
         if (right < n && getRightMax(right) > getRightMax(largest)) largest = right;
 
         if (largest != i) {
-            std::cerr << "    siftDownMax swap " << i << " with " << largest << std::endl;
+            std::stringstream ss_swap;
+            ss_swap << "    siftDownMax swap " << i << " with " << largest;
+            LOG_DEBUG(ss_swap.str());
             int& val_i = heap[i].hasSingle ? heap[i].left : heap[i].right;
             int& val_largest = heap[largest].hasSingle ? heap[largest].left : heap[largest].right;
             std::swap(val_i, val_largest);
 
             if (!heap[i].hasSingle && heap[i].left > heap[i].right) {
                 std::swap(heap[i].left, heap[i].right);
+                siftUpMin(i);
             }
             if (!heap[largest].hasSingle && heap[largest].left > heap[largest].right) {
                 std::swap(heap[largest].left, heap[largest].right);
+                siftUpMin(largest);
             }
             i = largest;
         } else {

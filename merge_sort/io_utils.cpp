@@ -1,5 +1,7 @@
 #include "io_utils.hpp"
+#include "logger.hpp"
 #include <iostream>
+#include <sstream>
 
 // Buffer implementation
 Buffer::Buffer(size_t size_in_bytes) : capacity(size_in_bytes / sizeof(int)), data() {
@@ -32,7 +34,9 @@ const std::vector<int>& Buffer::getData() const {
 FileReader::FileReader(const std::string& filename, Buffer& buffer) : buffer(buffer), current_pos(0) {
     file.open(filename, std::ios::binary);
     if (!file.is_open()) {
-        std::cerr << "Error opening file for reading: " << filename << std::endl;
+        std::stringstream ss;
+        ss << "Error opening file for reading: " << filename;
+        LOG_DEBUG(ss.str());
     }
     fillBuffer();
 }
@@ -75,7 +79,9 @@ void FileReader::close() {
 FileWriter::FileWriter(const std::string& filename, Buffer& buffer) : buffer(buffer), current_filename(filename) {
     file.open(filename, std::ios::binary | std::ios::trunc);
     if (!file.is_open()) {
-        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        std::stringstream ss;
+        ss << "Error opening file for writing: " << filename;
+        LOG_DEBUG(ss.str());
     }
 }
 
