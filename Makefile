@@ -18,18 +18,16 @@ MS_SRC = merge_sort/merge_sort_main.cpp \
          merge_sort/io_utils.cpp
 
 GEN_SRC = scripts/generate_input.cpp
-CMP_SRC = scripts/compare_output.cpp
 VS_SRC = scripts/verify_sorted.cpp
 
 # === Binaries ===
 QS_OUT = $(BIN_DIR)/quick_sort_exec
 MS_OUT = $(BIN_DIR)/merge_sort_exec
 GEN_OUT = $(BIN_DIR)/generate_input
-CMP_OUT = $(BIN_DIR)/compare_output
 VS_OUT = $(BIN_DIR)/verify_sorted
 
 # === Default: Build Everything ===
-all: $(QS_OUT) $(MS_OUT) $(GEN_OUT) $(CMP_OUT) $(VS_OUT)
+all: $(QS_OUT) $(MS_OUT) $(GEN_OUT) $(VS_OUT)
 
 # === Targets ===
 $(QS_OUT): $(QS_SRC)
@@ -41,10 +39,6 @@ $(MS_OUT): $(MS_SRC)
 	@echo "Built: $@"
 
 $(GEN_OUT): $(GEN_SRC)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-	@echo "Built: $@"
-
-$(CMP_OUT): $(CMP_SRC)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 	@echo "Built: $@"
 
