@@ -2,6 +2,12 @@
 
 This project implements external sorting using quick sort and merge sort.
 
+## Algorithm Explanations
+
+For a detailed explanation of the external quick sort algorithm, including a flowchart of the process, please see [external_quick_sort.md](external_quick_sort.md).
+
+For a detailed explanation of the external merge sort algorithm, including its two-phase process, please see [external_merge_sort.md](external_merge_sort.md).
+
 ## Building the Code
 
 To build the code, run the following command:
