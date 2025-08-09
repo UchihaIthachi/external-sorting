@@ -64,12 +64,10 @@ jobs:
 
       # 6) Commit the generated PDF back to main
       - name: Commit PDF back to repo
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           set -e
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
-          git add report/report.pdf
+          git add report/
           git commit -m "docs: auto-generate report and update PDF" || echo "No changes to commit"
           git push
