@@ -12,6 +12,15 @@
 \section*{Overview}
 This report presents the performance analysis of two external sorting algorithms---\textbf{External Merge Sort} and \textbf{External Quick Sort}---each tested on three 256~MB input files, using a memory limit of 16~MB per run. The analysis covers correctness, speed, and failure cases. Figure~\ref{fig:sort_times_comparison} provides a direct comparison.
 
+\section*{Data Generation}
+The tests were performed on three distinct input files, each generated with a size of 256~MB. The generation process is detailed below:
+\begin{verbatim}
+--- Generating 3 input files (256MB each) ---
+File 'data/input_1.txt' generated (256 MB, 67108864 numbers).
+File 'data/input_2.txt' generated (256 MB, 67108864 numbers).
+File 'data/input_3.txt' generated (256 MB, 67108864 numbers).
+\end{verbatim}
+
 \section*{Experimental Results}
 \begin{table}[h!]
 \centering
@@ -19,11 +28,11 @@ This report presents the performance analysis of two external sorting algorithms
 \toprule
 Test Run & Merge Sort Time (s) & Quick Sort Time (s) \\
 \midrule
-1 & 19.95 & 572.34 \\
-2 & 20.18 & 571.22 \\
-3 & 19.67 & 570.36 \\
+1 & 22.23 & 572.19 \\
+2 & 20.54 & 570.84 \\
+3 & 22.17 & 570.37 \\
 \midrule
-\textbf{Average} & \textbf{19.94} & \textbf{571.30} \\
+\textbf{Average} & \textbf{21.65} & \textbf{571.13} \\
 \bottomrule
 \end{tabular}
 \caption{Performance summary of external sorting algorithms across three runs. ``FAILED'' indicates the algorithm failed to sort or crashed. ``TIMEOUT'' indicates the run exceeded the allowed time limit.}
@@ -40,9 +49,9 @@ Test Run & Merge Sort Time (s) & Quick Sort Time (s) \\
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.7\textwidth]{figures/merge_sort_time.png}
-\caption{Execution time for external merge sort on three 256~MB files.}
-\label{fig:merge_sort_time}
+\includegraphics[width=0.7\textwidth]{figures/performance_variability.png}
+\caption{Performance variability of sorting algorithms across three runs. The box shows the interquartile range (IQR), the line inside is the median, and whiskers extend to 1.5x IQR.}
+\label{fig:performance_variability}
 \end{figure}
 
 \section*{Summary and Recommendations}
