@@ -3,11 +3,8 @@ name: Build Report PDF
 on:
   workflow_dispatch:
   push:
-    paths:
-      - "report/**.tex"
-      - "report/**.bib"
-      - "report/**.sty"
-      - "report/**.png"
+    branches:
+      - main
 
 jobs:
   build:
@@ -17,23 +14,31 @@ jobs:
       # 1. Checkout repository
       - uses: actions/checkout@v4
 
-      # 2. Compile LaTeX
+      # 2. Build C++ executables
+      - name: Build C++ executables
+        run: make all
+
+      # 3. Generate report
+      - name: Generate report
+        run: make report
+
+      # 4. Compile LaTeX
       - uses: xu-cheng/latex-action@v2
         with:
           root_file: report.tex
           working_directory: report
 
-      # 3. Upload PDF as an artifact
+      # 5. Upload PDF as an artifact
       - uses: actions/upload-artifact@v4
         with:
           name: report-pdf
           path: report/report.pdf
 
-      # 4. Commit and push the updated PDF back to the repo
+      # 6. Commit and push the updated PDF back to the repo
       - name: Commit PDF back to repo
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add report/report.pdf
-          git commit -m "Auto-update report.pdf" || echo "No changes to commit"
+          git commit -m "docs: auto-generate report and update PDF" || echo "No changes to commit"
           git push
