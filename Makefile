@@ -122,7 +122,7 @@ verify-ms: $(MS_OUT) $(VS_OUT)
 REPORT_SRC = scripts/generate_report.cpp
 REPORT_OUT = $(BIN_DIR)/generate_report
 TIME_SCRIPT = scripts/run_and_time.sh
-PLOT_SCRIPT = scripts/plot_merge_sort_time.py
+PLOT_SCRIPT = scripts/plot_graphs.py
 TEX_OUT = report/report.tex
 
 $(REPORT_OUT): $(REPORT_SRC)
@@ -136,10 +136,9 @@ report: $(REPORT_OUT) generate-3-files
 	@$(REPORT_OUT) > $(TEX_OUT)
 	@echo "--- Report generation complete: $(TEX_OUT) ---"
 
-pdf: report/report.tex
-	@echo "--- Compiling LaTeX to PDF via online service ---"
-	@curl -fLs "https://latexonline.cc/compile?url=$(REMOTE_TEX)" -o report/report.pdf \
-	 || { echo "latexonline failed. Is the repo public and the file/URL correct?"; exit 1; }
+pdf: report
+	@echo "--- Compiling LaTeX to PDF using Docker ---"
+	@docker run --rm -v $(shell pwd)/report:/workdir texlive/texlive:latest pdflatex -interaction=nonstopmode -output-directory=/workdir /workdir/report.tex
 	@echo "PDF saved to report/report.pdf"
 
 # === Declare Phony Targets ===

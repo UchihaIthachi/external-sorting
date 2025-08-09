@@ -30,6 +30,17 @@ void print_latex_report(const std::vector<RunResult>& results) {
     std::cout << "This report presents the performance analysis of two external sorting algorithms---\\textbf{External Merge Sort} and \\textbf{External Quick Sort}---each tested on three 256~MB input files, using a memory limit of 16~MB per run. "
                  "The analysis covers correctness, speed, and failure cases. Figure~\\ref{fig:sort_times_comparison} provides a direct comparison.\n\n";
 
+    // Data Generation Section
+    std::cout << "\\section*{Data Generation}\n"
+              << "The tests were performed on three distinct input files, each generated with a size of 256~MB. "
+              << "The generation process is detailed below:\n"
+              << "\\begin{verbatim}\n"
+              << "--- Generating 3 input files (256MB each) ---\n"
+              << "File 'data/input_1.txt' generated (256 MB, 67108864 numbers).\n"
+              << "File 'data/input_2.txt' generated (256 MB, 67108864 numbers).\n"
+              << "File 'data/input_3.txt' generated (256 MB, 67108864 numbers).\n"
+              << "\\end{verbatim}\n\n";
+
     // Results Table
     std::cout << "\\section*{Experimental Results}\n";
     std::cout << "\\begin{table}[h!]\n"
@@ -93,9 +104,9 @@ void print_latex_report(const std::vector<RunResult>& results) {
 
     std::cout << "\\begin{figure}[h!]\n"
               << "\\centering\n"
-              << "\\includegraphics[width=0.7\\textwidth]{figures/merge_sort_time.png}\n"
-              << "\\caption{Execution time for external merge sort on three 256~MB files.}\n"
-              << "\\label{fig:merge_sort_time}\n"
+              << "\\includegraphics[width=0.7\\textwidth]{figures/performance_variability.png}\n"
+              << "\\caption{Performance variability of sorting algorithms across three runs. The box shows the interquartile range (IQR), the line inside is the median, and whiskers extend to 1.5x IQR.}\n"
+              << "\\label{fig:performance_variability}\n"
               << "\\end{figure}\n\n";
 
     // Discussion
