@@ -14,27 +14,23 @@ jobs:
       # 1. Checkout repository
       - uses: actions/checkout@v4
 
-      # 2. Build C++ executables
-      - name: Build C++ executables
-        run: make all
-
-      # 3. Generate report
+      # 2. Generate report
       - name: Generate report
         run: make report
 
-      # 4. Compile LaTeX
+      # 3. Compile LaTeX
       - uses: xu-cheng/latex-action@v2
         with:
           root_file: report.tex
           working_directory: report
 
-      # 5. Upload PDF as an artifact
+      # 4. Upload PDF as an artifact
       - uses: actions/upload-artifact@v4
         with:
           name: report-pdf
           path: report/report.pdf
 
-      # 6. Commit and push the updated PDF back to the repo
+      # 5. Commit and push the updated PDF back to the repo
       - name: Commit PDF back to repo
         run: |
           git config --global user.name "github-actions[bot]"
