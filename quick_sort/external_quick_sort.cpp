@@ -82,7 +82,7 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
         }
         last_h_min = h_min;
 
-        bool should_log = (count >= 611330 && count <= 611340) || (violation_found && count < 611340);
+        bool should_log = false; // (count >= 611330 && count <= 611340) || (violation_found && count < 611340);
 
         if (should_log) {
              std::cerr << "i=" << count << " | val=" << value

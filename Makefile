@@ -35,7 +35,7 @@ CMP_OUT = $(BIN_DIR)/compare_output
 VS_OUT = $(BIN_DIR)/verify_sorted
 
 # === Default: Build Everything ===
-all: $(QS_OUT) $(MS_OUT) $(GEN_OUT) $(CMP_OUT) $(VS_OUT)
+all: $(QS_OUT) $(MS_OUT) $(GEN_OUT) $(VS_OUT)
 
 # === Targets ===
 $(QS_OUT): $(QS_SRC)
