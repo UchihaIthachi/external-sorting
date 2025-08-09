@@ -1,0 +1,22 @@
+name: Build Report PDF
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "report/**.tex"
+      - "report/**.bib"
+      - "report/**.sty"
+      - "report/**.png"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dante-ev/latex-action@v2
+        with:
+          root_file: report.tex
+          working_directory: report
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-pdf
+          path: report/report.pdf

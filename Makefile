@@ -1,3 +1,9 @@
+# === Configurable Variables ===
+REPO_USER = UchihaIthachi
+REPO_NAME = external-sorting
+BRANCH    = main
+REMOTE_TEX = https://raw.githubusercontent.com/$(REPO_USER)/$(REPO_NAME)/$(BRANCH)/report/main.tex
+
 # === Compiler Setup ===
 CXX = g++
 CXXFLAGS = -std=c++17 -O2
@@ -125,11 +131,17 @@ $(REPORT_OUT): $(REPORT_SRC)
 
 report: $(REPORT_OUT) generate-3-files
 	@echo "--- Running experiments and generating report ---"
-	# @bash $(TIME_SCRIPT)
+	@bash $(TIME_SCRIPT)
 	@python $(PLOT_SCRIPT)
 	@$(REPORT_OUT) > $(TEX_OUT)
 	@echo "--- Report generation complete: $(TEX_OUT) ---"
 
+pdf: report/report.tex
+	@echo "--- Compiling LaTeX to PDF via online service ---"
+	@curl -fLs "https://latexonline.cc/compile?url=$(REMOTE_TEX)" -o report/report.pdf \
+	 || { echo "latexonline failed. Is the repo public and the file/URL correct?"; exit 1; }
+	@echo "PDF saved to report/report.pdf"
+
 # === Declare Phony Targets ===
 .PHONY: all clean clean-partitions quick_sort merge_sort scripts \
-        run-qs run-ms run-all generate-256 verify-qs verify-ms report
+        run-qs run-ms run-all generate-3-files verify-qs verify-ms report pdf

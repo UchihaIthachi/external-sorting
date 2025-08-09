@@ -20,7 +20,7 @@ void print_latex_report(const std::vector<RunResult>& results) {
               << "\\usepackage{geometry}\n"
               << "\\geometry{a4paper, margin=1in}\n"
               << "\\title{External Sorting Performance Report}\n"
-              << "\\author{Harshana Lakshara Fernando}\n"
+              << "\\author{Fernando T.H.L.(210167E)}\n"
               << "\\date{\\today}\n"
               << "\\begin{document}\n"
               << "\\maketitle\n\n";
