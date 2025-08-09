@@ -7,12 +7,13 @@ on:
       - "report/**.bib"
       - "report/**.sty"
       - "report/**.png"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dante-ev/latex-action@v1
+      - uses: xu-cheng/latex-action@v2   # ✅ correct repo + tag
         with:
           root_file: report.tex
           working_directory: report
