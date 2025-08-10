@@ -7,4 +7,4 @@
 #include <algorithm>
 #include <iostream>
 
-void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit);
+void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit, int k_way = 0);

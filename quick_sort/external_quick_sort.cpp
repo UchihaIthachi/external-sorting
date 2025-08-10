@@ -4,17 +4,48 @@
 #include <vector>
 #include <algorithm>
 
-void externalQuickSort(std::string inputFile, std::string outputFile, size_t memLimit, int recursion_level) {
+void externalQuickSort(std::string inputFile, std::string outputFile, size_t memLimit,
+                       int recursion_level,
+                       int input_buf_mb, int small_buf_mb,
+                       int large_buf_mb, int middle_buf_mb) {
     std::cout << "Recursion level: " << recursion_level << std::endl;
     std::cout << "Input file: " << inputFile << std::endl;
     std::cout << "Output file: " << outputFile << std::endl;
 
-    const size_t BUF_SIZE = 1 * 1024 * 1024;  // 1 MB buffer
-    if (memLimit <= 3 * BUF_SIZE) {
-        std::cerr << "Memory limit too small\n";
+    size_t heap_mem_size;
+    if (middle_buf_mb == 0) {
+        // Default logic if no config is provided
+        const size_t BUF_SIZE = 1 * 1024 * 1024; // 1 MB
+        if (memLimit <= 3 * BUF_SIZE) {
+            std::cerr << "Memory limit too small for default configuration\n";
+            return;
+        }
+        heap_mem_size = memLimit - 3 * BUF_SIZE;
+        std::cout << "Using default heap size calculation. Heap memory: " << heap_mem_size / (1024 * 1024) << "MB" << std::endl;
+    } else {
+        // User-provided config
+        heap_mem_size = (size_t)middle_buf_mb * 1024 * 1024;
+        size_t total_config_mem = (size_t)(input_buf_mb + small_buf_mb + large_buf_mb + middle_buf_mb) * 1024 * 1024;
+        
+        if (total_config_mem > memLimit) {
+            std::cerr << "Warning: The sum of configured sizes (" << total_config_mem / (1024*1024) 
+                      << "MB) exceeds memory limit (" << memLimit / (1024*1024) 
+                      << "MB). Check your parameters." << std::endl;
+        }
+        // We trust middle_buf_mb for the heap size, but ensure it's not larger than the total limit.
+        if (heap_mem_size > memLimit) {
+             std::cerr << "Error: Middle buffer size is larger than the total memory limit." << std::endl;
+             return;
+        }
+        std::cout << "Using custom heap size. Heap memory: " << heap_mem_size / (1024 * 1024) << "MB" << std::endl;
+    }
+
+    if (heap_mem_size <= sizeof(int)) {
+        std::cerr << "Invalid heap memory size calculated. Aborting." << std::endl;
         return;
     }
-    IntervalHeap pivotHeap((memLimit - 3 * BUF_SIZE) / sizeof(int));  // Your fixed interval heap here
+
+    IntervalHeap pivotHeap(heap_mem_size / sizeof(int));
 
     std::ifstream in(inputFile, std::ios::binary);
     if (!in) {
@@ -127,9 +158,9 @@ void externalQuickSort(std::string inputFile, std::string outputFile, size_t mem
     std::cout << "Middle partition written." << std::endl;
 
     std::cout << "Recursive call for small partition." << std::endl;
-    externalQuickSort(smallName.str(), sortedSmallName.str(), memLimit, recursion_level + 1);
+    externalQuickSort(smallName.str(), sortedSmallName.str(), memLimit, recursion_level + 1, input_buf_mb, small_buf_mb, large_buf_mb, middle_buf_mb);
     std::cout << "Recursive call for large partition." << std::endl;
-    externalQuickSort(largeName.str(), sortedLargeName.str(), memLimit, recursion_level + 1);
+    externalQuickSort(largeName.str(), sortedLargeName.str(), memLimit, recursion_level + 1, input_buf_mb, small_buf_mb, large_buf_mb, middle_buf_mb);
 
     std::cout << "Merging partitions..." << std::endl;
     std::ifstream f1(sortedSmallName.str(), std::ios::binary);

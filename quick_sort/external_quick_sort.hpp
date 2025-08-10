@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <fstream>
 
-void externalQuickSort(std::string inputFile, std::string outputFile, size_t memLimit, int recursion_level = 0);
+void externalQuickSort(std::string inputFile, std::string outputFile, size_t memLimit,
+                       int recursion_level = 0,
+                       int input_buf_mb = 0, int small_buf_mb = 0,
+                       int large_buf_mb = 0, int middle_buf_mb = 0);
 
 #endif

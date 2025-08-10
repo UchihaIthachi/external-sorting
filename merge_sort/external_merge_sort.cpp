@@ -11,7 +11,7 @@
 #include <climits>
 
 // External Merge Sort using Tournament Tree (min-winner tree)
-void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit) {
+void externalMergeSort(const std::string& inputFile, const std::string& outputFile, size_t memLimit, int k_way) {
     std::cout << "=== External Merge Sort ===" << std::endl;
     std::cout << "Input file: " << inputFile << std::endl;
     std::cout << "Output file: " << outputFile << std::endl;
@@ -106,7 +106,14 @@ void externalMergeSort(const std::string& inputFile, const std::string& outputFi
 
     // --------- Phase 2: Multi-way Merge (K-way Merge with Tournament Tree) ---------
     std::cout << "--- Multi-way Merging Phase ---" << std::endl;
-    int K = std::min(8, static_cast<int>(memLimit / BUF_SIZE / 2));
+    int K;
+    if (k_way > 0) {
+        K = k_way;
+        std::cout << "Using fixed K = " << K << std::endl;
+    } else {
+        K = std::min(8, static_cast<int>(memLimit / BUF_SIZE / 2));
+        std::cout << "Using heuristic K = " << K << std::endl;
+    }
     std::vector<std::string> currentRuns = runs, nextRuns;
     int pass = 1;
 

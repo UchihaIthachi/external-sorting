@@ -15,51 +15,65 @@ make merge_sort > /dev/null
 make quick_sort > /dev/null
 
 # Create the header for the data file
-echo "Run,MergeSortTime,QuickSortTime" > report/times.dat
+echo "Run,AlgorithmConfig,MergeSortTime,QuickSortTime" > report/times.dat
 
 MS_EXEC="bin/merge_sort_exec"
 QS_EXEC="bin/quick_sort_exec"
 MEM_LIMIT="16777216"
 
+# --- Configurations ---
+MS_K_VALUES=("heuristic" 4 8 16)
+
+declare -A QS_CONFIGS
+QS_CONFIGS=(
+    ["A"]="2 2 2 10"
+    ["B"]="1 1 1 13"
+    ["C"]="2 1 1 12"
+)
+
 # Loop through the 3 input files
 for i in {1..3}
 do
     INPUT_FILE="data/input_${i}.txt"
-    MS_OUT_FILE="data/sorted_ms_${i}.txt"
-    QS_OUT_FILE="data/sorted_qs_${i}.txt"
-
     echo "--- Processing file ${i}: ${INPUT_FILE} ---"
 
-    # Time the merge sort
-    echo "  Timing External Merge Sort..."
-    ms_time=$( (time ${MS_EXEC} ${INPUT_FILE} ${MS_OUT_FILE} ${MEM_LIMIT} >/dev/null) 2>&1 )
-    if [ $? -ne 0 ]; then
-        echo "  Merge Sort command failed!"
-        ms_time="-1.0"
-    fi
-    echo "  Merge Sort Time: $ms_time seconds"
+    # --- Run Merge Sort Experiments ---
+    for k in "${MS_K_VALUES[@]}"; do
+        MS_OUT_FILE="data/sorted_ms_${i}_k_${k}.txt"
+        echo "  Timing External Merge Sort with K=${k}..."
+        
+        k_arg=""
+        if [ "$k" != "heuristic" ]; then
+            k_arg=$k
+        fi
 
-    # Time the quick sort with a 5-minute timeout
-    echo "  Timing External Quick Sort..."
-    # echo "  Timing External Quick Sort (with 5-minute timeout)..."
-    
-    # Use a subshell with timeout to ensure 'time' can be found
-    qs_time=$( (time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} >/dev/null) 2>&1 )
-    # qs_time=$( (timeout 300s bash -c "time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} >/dev/null" ) 2>&1 )
-    qs_exit_code=$?
+        ms_time=$( (time ${MS_EXEC} ${INPUT_FILE} ${MS_OUT_FILE} ${MEM_LIMIT} ${k_arg} >/dev/null) 2>&1 )
+        if [ $? -ne 0 ]; then
+            echo "  Merge Sort command failed for K=$k!"
+            ms_time="-1.0"
+        fi
+        echo "  Merge Sort Time (K=$k): $ms_time seconds"
 
-    if [ $qs_exit_code -eq 124 ]; then
-        echo "  Quick Sort Timed Out!"
-        qs_time="-1.0"
-    elif [ $qs_exit_code -ne 0 ]; then
-        echo "  Quick Sort command failed!"
-        qs_time="-1.0"
-    fi
-    echo "  Quick Sort Time: $qs_time seconds"
+        # Append results to the data file
+        echo "${i},K=${k},${ms_time}," >> report/times.dat
+    done
 
-    # Append results to the data file
-    echo "${i},${ms_time},${qs_time}" >> report/times.dat
+    # --- Run Quick Sort Experiments ---
+    for config_name in A B C; do # Iterate in a specific order
+        params=${QS_CONFIGS[$config_name]}
+        QS_OUT_FILE="data/sorted_qs_${i}_${config_name}.txt"
+        echo "  Timing External Quick Sort with Config ${config_name}..."
+        
+        qs_time=$( (time ${QS_EXEC} ${INPUT_FILE} ${QS_OUT_FILE} ${MEM_LIMIT} ${params} >/dev/null) 2>&1 )
+        if [ $? -ne 0 ]; then
+            echo "  Quick Sort command failed for Config ${config_name}!"
+            qs_time="-1.0"
+        fi
+        echo "  Quick Sort Time (Config ${config_name}): $qs_time seconds"
 
+        # Append results to the data file
+        echo "${i},QS_${config_name},,${qs_time}" >> report/times.dat
+    done
 done
 
 echo "--- Timing complete. Results are in report/times.dat ---"
