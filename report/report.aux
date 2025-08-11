@@ -1,8 +1,13 @@
 \relax 
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Performance summary of external sorting algorithms across three runs. ``FAILED'' indicates the algorithm failed to sort or crashed. ``TIMEOUT'' indicates the run exceeded the allowed time limit.}}{1}{}\protected@file@percent }
-\newlabel{tab:perf_summary}{{1}{1}{}{table.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Execution time comparison between external merge sort and quick sort on three different 256~MB files. Missing bars indicate failure or timeout.}}{2}{}\protected@file@percent }
-\newlabel{fig:sort_times_comparison}{{1}{2}{}{figure.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Performance variability of sorting algorithms across three runs. The box shows the interquartile range (IQR), the line inside is the median, and whiskers extend to 1.5x IQR.}}{2}{}\protected@file@percent }
-\newlabel{fig:performance_variability}{{2}{2}{}{figure.2}{}}
-\gdef \@abspage@last{2}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Execution times (seconds) for external merge sort and external quick sort across three 256~MB input files. Merge Sort uses \(K\in \{\text  {heuristic},4,8,16\}\); Quick Sort uses three buffer splits: QS\_A: Input=2, Small=2, Large=2, Middle=10; QS\_B: Input=1, Small=1, Large=1, Middle=13; QS\_C: Input=2, Small=1, Large=1, Middle=12.}}{2}{table.1}\protected@file@percent }
+\newlabel{tab:perf_summary}{{1}{2}{Execution times (seconds) for external merge sort and external quick sort across three 256~MB input files. Merge Sort uses \(K\in \{\text {heuristic},4,8,16\}\); Quick Sort uses three buffer splits: QS\_A: Input=2, Small=2, Large=2, Middle=10; QS\_B: Input=1, Small=1, Large=1, Middle=13; QS\_C: Input=2, Small=1, Large=1, Middle=12}{table.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces External Merge Sort runtime by merge degree $K$ (heuristic, 4, 8, 16) for the three 256~MB inputs.}}{2}{figure.1}\protected@file@percent }
+\newlabel{fig:merge_sort_k_comparison}{{1}{2}{External Merge Sort runtime by merge degree $K$ (heuristic, 4, 8, 16) for the three 256~MB inputs}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces External Quick Sort runtime across buffer split configurations: QS\_A (2,2,2,10), QS\_B (1,1,1,13), QS\_C (2,1,1,12).}}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:quick_sort_config_comparison}{{2}{3}{External Quick Sort runtime across buffer split configurations: QS\_A (2,2,2,10), QS\_B (1,1,1,13), QS\_C (2,1,1,12)}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Best Merge Sort vs. Best Quick Sort per run (lowest time per algorithm per run).}}{3}{figure.3}\protected@file@percent }
+\newlabel{fig:best_vs_best}{{3}{3}{Best Merge Sort vs. Best Quick Sort per run (lowest time per algorithm per run)}{figure.3}{}}
+\gdef \@abspage@last{3}
