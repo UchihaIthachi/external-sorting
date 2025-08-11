@@ -72,5 +72,7 @@ graph TD
 ```
 
 - **K Input Buffers**: To avoid excessive disk reads, a portion of memory is dedicated to a buffer for each of the `K` runs currently being merged.
+
 - **Output Buffer**: A buffer to efficiently write the final merged output to a new run file on disk.
+
 - **Tournament Tree**: A small but crucial data structure that holds the `K` candidate elements (one from each run) to quickly determine the overall minimum.
